@@ -1,0 +1,18 @@
+# Node metadata protection
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Create a pod
+kubectl run frontend --image=nginx
+
+# Try to curl the instance metadata
+kubectl exec frontend -- curl http://169.254.169.254/latest/meta-data/
+
+# The pod can access the instance metadata and this is not what we want
+
+# Deny egress traffic by all pods to the instance metadata via the IP address
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/protect-node-metadata/np_cloud_metadata_deny.yaml
+
+# Delete cluster
+kind delete cluster

@@ -1,0 +1,28 @@
+# RBAC
+## ClusterRole binding
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Create a namespace
+kubectl create namespace red
+
+# Create a cluster role
+kubectl create clusterrole deployment-manager-cr --verb=delete --resource=deployment
+
+# Create a cluster role binding
+kubectl create clusterrolebinding deployment-manager-crb --clusterrole=deployment-manager-cr --user=jane
+
+# Create a role binding in namespace red
+kubectl -n red create rolebinding deployment-manager--rb --clusterrole=deployment-manager-cr --user=jim
+
+# Verify approved user permission
+kubectl auth can-i delete deployment --as=jane -A
+kubectl -n red auth can-i delete deployment --as=jim
+
+# Verify un-approved user permission
+kubectl auth can-i list deployment --as=jane -A
+kubectl auth can-i delete deployment --as=jim -A
+
+# Delete cluster
+kind delete cluster

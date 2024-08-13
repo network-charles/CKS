@@ -1,0 +1,23 @@
+# Mutual TLS
+## Lets create a side-car proxy container with NET_ADMIN capability
+
+mTLS is a 2-way communication used for authentication.
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Create a pod
+kubectl run bash --image=bash --command -o yaml --dry-run=client > pod.yaml -- sh -c 'ping google.com'
+kubectl apply -f pod.yaml
+kubectl exec -it pod -- bash
+
+# Add an ubuntu proxy container to the existing pod {.spec.containers.name} also observe what happens without the capabilities field
+kubectl delete pod pod --force
+kubectl apply -f pod.yaml
+
+# The proxy container fails because no NET_ADMIN capability is configured. Add it via the securityContext.
+kubectl delete pod pod --force
+kubectl apply -f pod.yaml
+
+# Delete cluster
+kind delete cluster

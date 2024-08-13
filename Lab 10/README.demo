@@ -1,0 +1,33 @@
+# Verify Platform Binaries (not working for kind cluster)
+## API-Server Binaries
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Locate the release version and download the hash of your system spec. I have an AMD64
+wget https://dl.k8s.io/v1.31.0/kubernetes-server-linux-amd64.tar.gz
+
+# Extract it
+tar xzf kubernetes-server-linux-amd64.tar.gz
+
+# Get its hash value
+sha512sum kubernetes/server/bin/kube-apiserver
+
+# Access the control plane node
+docker exec -it kind-control-plane /bin/bash
+
+# Grab the process ID of the api-server container
+ps aux | grep -i apiserver
+
+# Get into the shell and find the file path of the apiserver binary
+find /proc/546/root/ | grep -i kube-apiserver
+
+# Compute and compare your hash value with the one on gitgub to make sure it matches
+sha512sum /proc/546/root/usr/local/bin/kube-apiserver
+
+# Save the output into a file then paste the copied hash from github into it for comparison (remove any non-hash characters)
+sha512sum kubernetes-server-linux-amd64.tar.gz > compare
+cat compare | uniq
+
+# Delete cluster
+kind delete cluster

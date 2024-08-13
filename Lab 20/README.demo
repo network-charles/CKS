@@ -1,0 +1,67 @@
+# Secrets accessible via container runtime and etcd
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Create secret 1 and 2
+kubectl create secret generic secret1 --from-literal user=admin
+kubectl create secret generic secret2 --from-literal pass=12345678
+
+# Mount secret1 via file system
+kubectl run pod-file-system --image nginx -o yaml --dry-run=client > pod-file-system.yaml
+kubectl apply -f pod-file-system.yaml
+kubectl exec pod-file-system -- mount | grep secret1
+
+# Mount secret2 via env variable
+kubectl run pod-env-variable --image nginx -o yaml --dry-run=client > pod-env-variable.yaml
+kubectl apply -f pod-env-variable.yaml
+kubectl exec pod-env-variable -- env | grep secret2
+
+# Exec into worker node
+docker exec -it kind-worker bash
+
+# Find the file-system pod and inspect it
+crictl ps
+crictl inspect 012f4e84b4e49 | grep -i secre
+
+## Get the file-system-pod process ID and file path and then exec into it to view the secret
+crictl inspect 012f4e84b4e49 | grep -i pid
+cat proc/1287/root/etc/secret1/user
+
+# Find the env pod and inspect it
+crictl ps
+crictl inspect 0d1fc6daf3418 | grep -i secre
+
+# Access ETCD and try to view the secrets
+kubectl apply -f https://gist.githubusercontent.com/aojea/6f17c07251cf9251f66a611d80c6a6f1/raw/c00a517341528862fe16b2fb8c40126d5dfd17b3/etcdclient.yml
+kubectl exec -it etcdclient -- sh
+etcdctl get /registry/secrets/default/secret1
+etcdctl get /registry/secrets/default/secret2
+
+# Encrypt etcd at rest
+# Get the base64 encoding of any random value
+head -c 32 /dev/urandom | base64
+echo -n passwordpassword | base64
+
+# Exec into the master node and specify the encryption argument and its corresponding configuration
+docker exec -it kind-control-plane bash
+apt update
+apt install nano -y
+cd /etc/kubernetes/pki
+nano encrypt-etcd.yaml
+
+# add argument at the last row of {.spec.containers.command}
+apt install vim -y
+vi /etc/kubernetes/manifests/kube-apiserver.yaml
+--encryption-provider-config=/etc/kubernetes/pki/encrypt-etcd.yaml
+
+# Create a new secret and view the value in etcd
+kubectl create secret generic secret3 --from-literal user=charles
+kubectl exec -it etcdclient -- sh
+etcdctl get /registry/secrets/default/secret3
+
+# encrypt all
+kubectl get secrets --all-namespaces -o json | kubectl replace -f -
+
+# Delete cluster
+kind delete cluster

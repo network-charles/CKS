@@ -1,0 +1,16 @@
+# Disable insecure port to the API server
+
+The insecure port in an API server is disabled on default. But to see it in action
+we can enable it. The danger is that, a request to the API will skip authentication and authorization.
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Run an insecure proxy
+kubectl proxy --port=8080 &
+
+# Test the API
+curl http://localhost:8080/
+
+# Delete cluster
+kind delete cluster

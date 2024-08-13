@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod-env-variable
+  name: pod-env-variable
+spec:
+  containers:
+  - image: nginx
+    name: pod-env-variable
+    resources: {}
+    env:
+    - name: secret2
+      valueFrom:
+        secretKeyRef:
+          name: secret2
+          key: pass
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}

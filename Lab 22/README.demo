@@ -1,0 +1,52 @@
+# Security context for pod and container
+## Change the user and group a container process is running in
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Create a pod
+kubectl run pod --image=busybox --command -o yaml --dry-run=client > pod.yaml -- sh -c 'sleep 1d'
+kubectl apply -f pod.yaml
+kubectl exec -it pod -- sh
+
+# View user and group of the system and also a new file
+id          # View user and group of the system 
+touch test  
+ls -l test # View user and group of a new file
+
+# Add a security context in the pod {.spec}
+securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+
+# Delete and create the pod again
+kubectl delete pod pod --force
+kubectl apply -f pod.yaml
+
+# View user and group of the system and also a new file
+kubectl exec -it pod -- sh
+id          # View user and group of the system 
+touch test  # Permission is denied to create a file in the root directory
+
+# Add a new security context to the container directly and remove the one in the pod level
+securityContext:
+    runAsNonRoot: true
+
+kubectl delete pod pod --force     
+kubectl apply -f pod.yaml
+
+# View user and group of the system and also a new file
+kubectl exec -it pod -- sh
+
+The pod fails to run
+
+kubectl describe pod pod | grep runAsNonRoot
+
+Warning  Failed     46s (x8 over 2m4s)  kubelet            Error: container has runAsNonRoot and image will run as root (pod: "pod_default(c9175bb3-507b-4ba0-81b8-1837b938b15e)", container: pod)
+
+We get an error saying that the container can only run as root.
+
+## Priviledged containers
+
+# Delete cluster
+kind delete cluster

@@ -1,0 +1,34 @@
+# Network policies 
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Create 2 pods and expose them
+kubectl run frontend --image=nginx
+kubectl run backend --image=nginx
+kubectl expose pod frontend --port 80
+kubectl expose pod backend --port 80
+
+# Try to curl from frontend to backend and vice-versa
+kubectl exec frontend -- curl backend
+kubectl exec backend -- curl frontend
+
+# Create default-deny network policy
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/network-policies/default-deny/default-deny.yaml
+
+# Try to curl from frontend to backend and vice-versa
+kubectl exec frontend -- curl backend
+kubectl exec backend -- curl frontend
+
+# Allow egress in frontend and ingress in backend
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/network-policies/frontend-backend/frontend.yaml
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/network-policies/frontend-backend/backend.yaml
+kubectl exec frontend -- curl backend
+
+# Frontend curl still fails because default-deny-all affects dns too
+# Allow dns but default-deny others
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/network-policies/default-deny/default-deny-allow-dns.yaml
+kubectl exec frontend -- curl backend
+
+# Delete cluster
+kind delete cluster

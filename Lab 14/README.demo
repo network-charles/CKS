@@ -1,0 +1,41 @@
+# Accounts
+## Service accounts (used to communicate with the API-Server)
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Create a service account
+kubectl create sa assessor
+
+# Create a token and paste it into a JSON web token expander like jwt.io to view the payload
+kubectl create token assessor
+
+# Create a kubectl pod that uses a custom service account
+kubectl apply -f pod.yaml
+
+# Exec into the pod and communicate with the API server using kubectl
+kubectl exec -it assessor-pod -- bash
+kubectl get pod
+
+Error from server (Forbidden): pods is forbidden: User "system:serviceaccount:default:assessor" cannot list resource "pods" in API group "" in the namespace "default"
+
+The above mean that the serviceaccount has no permissions assigned to it.
+
+# Create a role with an assigned permission via a role binding
+kubectl create role assessor-role --verb=get,list --resource=pod
+
+# Create a role binding
+kubectl create rolebinding assessor-rb --role=assessor-role --serviceaccount=default:assessor
+
+# Exec into the pod again and communicate with the API server using kubectl
+kubectl exec -it assessor-pod -- bash
+kubectl get pod
+
+NAME           READY   STATUS    RESTARTS   AGE
+assessor-pod   1/1     Running   0          22m
+
+# Or verify from outside the pod
+kubectl auth can-i get pod --as system:serviceaccount:default:assessor      
+
+# Delete cluster
+kind delete cluster

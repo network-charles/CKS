@@ -1,0 +1,35 @@
+# Container sandbox
+# Gvisor
+
+# Create cluster 
+terraform apply -auto-approve
+
+# exec into the master node using the terraform output variable called "master" and set up the machine
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_master.sh
+bash install_master.sh
+
+# exec into the master node using the terraform output variable called "worker" and set up the machine
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_worker.sh
+bash install_worker.sh
+
+# Create pod
+kubectl run pod --image nginx
+kubectl exec -it pod -- bash
+
+# Make a sys-call to the kernel from the container
+uname -r
+
+# Create a runtime class
+kubectl apply -f runtime_class.yaml
+
+# Specify runtime class in the pod manifest
+kubectl run gvisor --image nginx --dry-run client -o yaml > pod.yaml
+kubectl apply -f pod.yaml
+
+# Install gvisor in the worker node
+# Enable runsc in containerd
+curl https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/microservice-vulnerabilities/container-runtimes/gvisor/install_gvisor.sh
+bash install_gvisor.sh
+
+# Delete cluster
+kind delete cluster

@@ -1,0 +1,20 @@
+# CIS Benchmark
+# 1.1.1 Ensure that the API server pod specification file permissions are set to 644 or more restrictive (Automated)
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Access the control plane node
+docker exec -it kind-control-plane /bin/bash
+
+# Verify the nodes permissions (mine is 600)
+stat -c %a /etc/kubernetes/manifests/kube-apiserver.yaml
+
+# Change the permission to 644
+chmod 644 /etc/kubernetes/manifests/kube-apiserver.yaml
+
+# Verify the new permission
+stat -c %a /etc/kubernetes/manifests/kube-apiserver.yaml
+
+# Delete cluster
+kind delete cluster

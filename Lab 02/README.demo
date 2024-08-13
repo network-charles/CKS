@@ -1,0 +1,19 @@
+# Containers isolation
+
+# View namespaces
+sudo lsns
+
+# Create two alpine containers
+docker run --name c1 -d alpine sh -c 'sleep 1d'
+docker exec c1 ps aux
+
+docker run --name c2 -d alpine sh -c 'sleep 2d'
+docker exec c2 ps aux
+
+# View running processes of each container running in differente namespaces
+ps aux | grep sleep
+
+# Remove c2 and run in c1 namespace
+docker rm c2 --force
+docker run --name c2 --pid=container:c1 -d alpine sh -c 'sleep 2d'
+docker exec c1 ps aux

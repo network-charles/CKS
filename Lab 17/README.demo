@@ -1,0 +1,22 @@
+# Perform API Requests using the CA, CRT, and KEY
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Decode the ca, crt, and key
+kubectl config view --raw
+
+# Then indovidually copy the ca, crt, and key
+echo *** | base64 -d > ca
+echo *** | base64 -d > key
+echo *** | base64 -d > crt
+
+# Grab the API servers IP address from the control-plane node
+docker exec -it kind-control-plane bash
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep address
+
+# From outside the container, curl to the API server
+curl https://172.18.0.3:6443 --cacert ca --cert crt --key key
+
+# Delete cluster
+kind delete cluster

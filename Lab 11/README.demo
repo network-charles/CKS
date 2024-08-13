@@ -1,0 +1,35 @@
+# RBAC
+## Role binding
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Create two namespaces
+kubectl create namespace red
+kubectl create namespace blue
+
+# Namespace red
+## Create a role
+kubectl -n red create role secret-manager-r --verb=get --resource=secrets
+
+## Create a role binding
+kubectl -n red create rolebinding secret-manager-rb --role=secret-manager-r --user=jane
+
+# Namespace blue
+## Create a role
+kubectl -n blue create role secret-manager-r --verb=get --verb=list --resource=secrets
+
+## Create a role binding
+kubectl -n blue create rolebinding secret-manager-rb --role=secret-manager-r --user=jane
+
+# Verify approved user permission
+kubectl -n red auth can-i get secret --as=jane
+kubectl -n blue auth can-i get secret --as=jane
+kubectl -n blue auth can-i list secret --as=jane
+
+# Verify un-approved user permission
+kubectl -n red auth can-i list secret --as=jane
+kubectl -n blue auth can-i delete secret --as=jane
+
+# Delete cluster
+kind delete cluster

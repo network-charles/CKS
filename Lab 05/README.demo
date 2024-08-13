@@ -1,0 +1,33 @@
+# Secure ingress
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Install nginx controller
+kubectl apply -f 
+https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/nginx-ingress-controller.yaml
+
+# Add a path to service 1 and 2
+kubectl apply -f 
+https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/secure-ingress-step1.yaml
+
+# Create 2 pods and expose them
+kubectl run pod1 --image=nginx
+kubectl run pod2 --image=nginx
+kubectl expose pod pod1 --port 80 --name service1
+kubectl expose pod pod2 --port 80 --name service2
+
+# Access services 1 and 2 (http)
+curl public_ip:nodeport_http/service1
+curl public_ip:nodeport_http/service2
+
+# Create TLS with a self signed SSL certificate
+kubectl apply -f 
+https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/secure-ingress-step2.yaml
+
+# Access services 1 and 2 (https)
+curl public_ip:nodeport_https/service1 -k
+curl public_ip:nodeport_https/service2 -k
+
+# Delete cluster
+kind delete cluster

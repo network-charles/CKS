@@ -1,0 +1,44 @@
+# Verify that node restriction works by using worker nodes kubelet kubeconfig to set labels
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Verify that node restriction is enabled on admission pulugin for the API server
+docker exec -it kind-control-plane bash
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep admission
+
+Yes, it is.
+- --enable-admission-plugins=NodeRestriction
+
+# Via the worker node what admission controler restricts in action
+docker exec -it kind-worker bash
+
+# No context to communicate with the API server
+kubectl config view
+
+# Uses kubelet.conf to communicate with the API server
+cat /etc/kubernetes/kubelet.conf
+
+# Use the file as kubeconfig
+export KUBECONFIG=/etc/kubernetes/kubelet.conf
+
+# Set a label on the master node
+kubectl get node
+kubectl label node kind-control-plane cks/test=yes
+
+Error from server (Forbidden): nodes "kind-control-plane" is forbidden: node "kind-worker" is not allowed to modify node "kind-control-plane"
+
+# Set a label on the worker node
+kubectl label node kind-worker cks/test=yes
+
+It works
+
+# Set a label on the worker node starting with node-restriction.kubernetes.io/
+kubectl label node kind-worker node-restriction.kubernetes.io/test=yes
+
+Error from server (Forbidden): nodes "kind-worker" is forbidden: is not allowed to modify labels: node-restriction.kubernetes.io/test
+
+So, admins can set secure labels using this prefix. With an assurance that false node can't modify them.
+
+# Delete cluster
+kind delete cluster

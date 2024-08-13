@@ -1,0 +1,21 @@
+# Verify Platform Binaries
+## Server Binaries
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Verify your kubernetes master node release version
+kubectl get node
+
+# Locate the release version and download the hash of your system spec. I have an AMD64
+wget https://dl.k8s.io/v1.31.0/kubernetes-server-linux-amd64.tar.gz
+
+# Compare your hash value with it to make sure it matches
+sha512sum kubernetes-server-linux-amd64.tar.gz
+
+# Save the output into a file then paste the copied hash from github into it for comparison (remove any non-hash characters)
+sha512sum kubernetes-server-linux-amd64.tar.gz > compare
+cat compare | uniq
+
+# Delete cluster
+kind delete cluster

@@ -1,0 +1,28 @@
+# Certificates 
+
+# create cluster 
+kind create cluster --config cluster.yaml
+
+# Exec into control plane
+docker exec -it kind-control-plane /bin/bash
+
+# View api-server certificates
+ls /etc/kubernetes/pki/
+
+# View scheduler certificates
+cat /etc/kubernetes/scheduler.conf
+
+# View controller-manager certificates
+cat /etc/kubernetes/controller-manager.conf
+
+# View kubelet certificates
+cat /etc/kubernetes/kubelet.conf
+
+# Exec into worker node
+docker exec -it kind-worker /bin/bash
+
+# View kubelet certificates
+cat /etc/kubernetes/kubelet.conf
+
+# Delete cluster
+kind delete cluster

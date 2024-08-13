@@ -1,0 +1,23 @@
+# CIS Benchmark
+# 1.1.12 Ensure that the etcd data directory ownership is set to etcd:etcd (Automated)
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Access the control plane node
+docker exec -it kind-control-plane /bin/bash
+
+# Verify the nodes permissions (mine is 600)
+stat -c %a /etc/kubernetes/manifests/kube-apiserver.yaml
+
+# Change the permission to 644
+chmod 644 /etc/kubernetes/manifests/kube-apiserver.yaml
+
+# Verify the new permission
+stat -c %a /etc/kubernetes/manifests/kube-apiserver.yaml
+
+# Delete cluster
+kind delete cluster
+
+
+# Note: I use a Cloud9 VM to host my cluster

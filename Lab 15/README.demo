@@ -1,0 +1,54 @@
+# Restrict anonymous access to the API server
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Grab the API servers IP address from the control-plane node
+docker exec -it kind-control-plane bash
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep address
+
+# From outside the container, curl to the API server (-k means use a local issuer certificate)
+curl https://172.18.0.3:6443 -k
+ 
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {},
+  "status": "Failure",
+  "message": "forbidden: User \"system:anonymous\" cannot get path \"/\"",
+  "reason": "Forbidden",
+  "details": {},
+  "code": 403
+}
+
+The message recognizes "system:anonymous". Meaning it currently allows requests from anonymous users.
+
+# Restrict requests from anonymous users
+docker exec -it kind-control-plane bash
+apt update
+apt install nano
+nano /etc/kubernetes/manifests/kube-apiserver.yaml
+
+Add the below to {.spec.containers.command}
+- --anonymous-auth=false
+
+# Wait for a few seconds for the API server to reboot
+sleep 20
+
+# From outside the container, curl to the API server again (-k means use a local issuer certificate)
+curl https://172.18.0.3:6443 -k
+ 
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {},
+  "status": "Failure",
+  "message": "Unauthorized",
+  "reason": "Unauthorized",
+  "code": 401
+}
+
+The message says "Unauthorized" now.
+
+# Delete cluster
+kind delete cluster

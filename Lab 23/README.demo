@@ -1,0 +1,35 @@
+# Security context for pod and container
+## Privileged containers
+
+By default containers in K8s are ran as unpriiviledged.
+Privileged means that the container user 0 (root) is mapped to the host user 0 (root),
+
+A privilege escalation can be set which allows a child process gain more privilege than its parent.
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Create a pod
+kubectl run pod --image=busybox --command -o yaml --dry-run=client > pod.yaml -- sh -c 'sleep 1d'
+
+# Add a priviledge escalation to the container securityContext {.spec.containers.command}
+allowPrivilegeEscalation: true
+
+kubectl apply -f pod.yaml
+kubectl exec -it pod -- sh
+
+# View privileged ID value (0)
+cat /proc/1/status | grep -i privs
+
+# Remove privilege escalation from the containers securityContext  {.spec.containers.command}
+allowPrivilegeEscalation: false
+
+kubectl delete pod pod --force
+kubectl apply -f pod.yaml
+kubectl exec -it pod -- sh
+
+# View privileged ID value (1)
+cat /proc/1/status | grep -i privs
+
+# Delete cluster
+kind delete cluster

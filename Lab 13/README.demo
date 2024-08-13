@@ -1,0 +1,41 @@
+# Accounts
+## Create a certificate+key and authenticate as a user "jane"
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Generate a key
+openssl genrsa -out jane.key 2048
+
+# Create a CSR (Common Name (e.g. server FQDN or YOUR name) []:jane)
+openssl req -new -key jane.key -out jane.csr
+
+# Generate a base64 of the csr file and paste it into the csr resource file at {.spec.request}
+cat jane.csr | base64 -w 0
+kubectl apply -f csr.yaml
+
+# Approve the CSR resource
+kubectl certificate approve jane
+
+# Grab the certificate from the API
+kubectl get csr jane -o jsonpath='{.status.certificate}' | base64 --decode > jane.crt
+
+# Create a user using these credentials
+kubectl config set-credentials jane --client-key=jane.key --client-certificate=jane.crt 
+
+# Verify the new user has been added
+kubectl config view
+
+# Add a context for the new user
+kubectl config set-context jane --user=jane --cluster=kind-kind
+
+# Verify the new user has been added
+kubectl config get-contexts
+
+# Switch to the new users contexts
+kubectl config use-context jane
+
+# This user can't perform any action or else a role/clusterrole and their bindings are assigned
+
+# Delete cluster
+kind delete cluster

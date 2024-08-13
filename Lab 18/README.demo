@@ -1,0 +1,37 @@
+# Make the Kubernetes API reachable from the outside
+
+# Create cluster 
+kind create cluster --config cluster.yaml
+
+# Change the kubernetes service type to nodePort and nodePort: 30950 
+kubectl edit service kubernetes
+
+# Access the kubernetes API server via the public IP
+curl http://checkip.amazonaws.com
+curl https://1.2.3.4:30950 -k
+
+# Copy the remote kubeconfig file and use it to access the cluster
+nano config
+
+# Grab the certificate-authority-data in the config file and decode it
+echo *** | base64 -d > ca
+
+# Inspect it to get the subject alternative name
+openssl x509 -in ca -text
+
+X509v3 Subject Alternative Name: 
+                DNS:kubernetes
+
+# Create an etc host entry because the API server uses a domain name linked to several IP address
+sudo vi /etc/hosts
+
+1.2.3.4 kubernetes
+
+# Update the config file {.server} url to use the DNS
+server: https://kubernetes:30950
+
+# Access the api server again using kubectl
+kubectl --kubeconfig config get node
+
+# Delete cluster
+kind delete cluster
