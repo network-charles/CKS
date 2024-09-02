@@ -1,0 +1,70 @@
+# Set up and configure audit logs
+
+Scenarios where its needed
+1. Did someone access an important resource when it was not protected?
+2. When was the last time user X access cluster Y
+3. Does my CRD work properly
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Enable auditing on the API server
+docker exec -it kind-control-plane bash
+apt update
+apt install vim wget -y
+cd /etc/kubernetes
+mkdir audit
+cd audit
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/runtime-security/auditing/policy_simple_everything.yaml
+cd ../manifests
+vi kube-apiserver.yaml
+
+- --audit-policy-file=/etc/kubernetes/audit/policy_simple_everything.yaml      
+- --audit-log-path=/etc/kubernetes/audit/logs/audit.log       
+- --audit-log-maxsize=500                                    
+- --audit-log-maxbackup=5
+
+- mountPath: /etc/kubernetes/audit
+    name: audit 
+
+- hostPath:                              
+    path: /etc/kubernetes/audit         
+    type: DirectoryOrCreate              
+  name: audit   
+
+# Tail the logs
+tail -f ../audit/logs/audit.log 
+
+# Do a get pod from the host and notice output in the tailed logs
+kubectl get pod
+
+--------------------------------------------------
+# The API server stores audit logs in JSON
+--------------------------------------------------
+
+# Create a secret
+kubectl create secret generic very-secure --from-literal user=admin
+
+# Grep for the secret in the audit logs
+cat logs/audit.log | grep very-secure
+
+--------------------------------------------------
+# Restrict logged data with an audit policy
+--------------------------------------------------
+# Go to the control plane node
+cd /etc/kubernetes/audit
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/runtime-security/auditing/policy_not_that_noisy.yaml
+
+# Update the API server
+cd ../manifests
+vi kube-apiserver.yaml
+- --audit-policy-file=/etc/kubernetes/audit/policy_not_that_noisy.yaml
+
+# Tail the logs and observe
+tail -f ../audit/logs/audit.log 
+
+# Create a pod, the "create" verb isn't a part of the policy
+kubectl run pod --image nginx
+
+# Delete cluster
+kind delete cluster
