@@ -1,0 +1,50 @@
+# Syscall and process behavioral analytics at host & container level
+
+Syscalls are calls made to the kernel. A few examples:
+1. strace: For intercepting and logging sys calls made by processes.
+2. proc: A directory for studying how a process works.
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# exec into the control plane node to view the syscall of etcd
+docker exec -it kind-control-plane bash
+apt install strace -y
+strace -cw ls # summarize the syscalls made and how often
+
+# Grab the etcd process ID
+ps aux | grep etcd
+648
+
+# List all the syscalls etcd made
+strace -cw -p 648 (abort with ctrl+c after 5secs)
+
+# Find open files made by etcd
+cd /proc/648/fd
+ls -l
+tail -f 10 (trace the output for the folder containing /var/lib/etcd/member/snap/db"
+
+# Read a secret value from these open files
+kubectl create secret generic credit-card --from-literal cc=1234567899999
+apt install binutils -y            # installs strings to read the binary data as strings
+cat 10 | strings | grep 1234567899999 -A0 -B10
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+# Read the secrets from the host file system
+kubectl create secret generic backend-user --from-literal=username='backend-admin'
+kubectl run apache --image httpd -o yaml --dry-run=client > pod.yaml
+kubectl apply -f pod.yaml
+kubectl exec apache -- env
+
+# View the proc directory of the apache process in the worker node
+docker exec -it kind-worker bash
+apt update && apt binutils -y            # installs strings to read the binary data as strings
+ps aux | grep httpd
+1345 # pick the foreground one having root
+cd /proc/1345
+cat environ | strings | grep SECRET_USERNAME
+
+# Delete cluster
+kind delete cluster
