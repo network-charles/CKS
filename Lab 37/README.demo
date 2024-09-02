@@ -1,0 +1,29 @@
+# Immutability of containers at runtime
+
+Ways to make a container immutable:
+1. Remove bash/shells
+2. Make filesystems read-only
+3. Run as user and non-root
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+---------------------------------------------------------------
+# Use startup probes to remove touch from a container
+---------------------------------------------------------------
+
+# Create a pod
+kubectl run immutable --image httpd -o yaml --dry-run=client > pod.yaml
+kubectl apply -f pod.yaml
+kubectl exec -it immutable -- bash
+touch test
+
+# Modify pod manifest and include a startup probe {.spec.containers}
+kubectl delete pod immutable --force
+kubectl apply -f pod_modified.yaml
+
+# Exec into the pod and try to use touch (it fails)
+kubectl exec -it immutable -- bash
+
+# Delete cluster
+kind delete cluster

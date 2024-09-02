@@ -1,0 +1,32 @@
+# Immutability of containers at runtime
+
+Ways to make a container immutable:
+1. Remove bash/shells
+2. Make filesystems read-only
+3. Run as user and non-root
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+---------------------------------------------------------------------------
+# Make filesystem read-only and ensure some are writable using an emptyDir
+---------------------------------------------------------------------------
+
+# Create a pod
+kubectl run immutable --image httpd -o yaml --dry-run=client > pod.yaml
+
+# Add a securityContext for making the file system read only {.spec.containers}
+kubectl apply -f pod.yaml
+kubectl exec -it immutable -- bash
+
+# View logs to see why ot crashed
+kubectl logs immutable
+<could not create /usr/local/apache2/logs/httpd.pid.pxEByL>
+
+# Make /usr/local/apache2/logs/ writable by adding an emptyDir volume
+kubectl delete pod immutable --force
+kubectl apply -f pod_modified.yaml
+kubectl exec -it immutable -- bash
+
+# Delete cluster
+kind delete cluster
