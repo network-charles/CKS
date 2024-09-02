@@ -1,7 +1,8 @@
 # Container sandbox
 # Gvisor
 
-# Create cluster 
+# Create cluster
+terraform init -backend-config=backend.conf
 terraform apply -auto-approve
 
 # exec into the master node using the terraform output variable called "master" and set up the machine

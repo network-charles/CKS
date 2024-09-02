@@ -1,0 +1,10 @@
+# Scan images for known vulnerabilities 
+Some known vulnerabilities includes:
+1. Not denying certain image versions from a registry using OPA
+2. Lack of image scanning
+3. Not ensuring that images are signed from a legit source before deployment
+
+Some open source tools, Clair, and Trivy.
+
+# Use Trivy to scan the nginx image
+docker run aquasec/trivy image nginx

@@ -1,0 +1,28 @@
+# Open Policy Agent (OPA)
+## Allow all policy
+
+OPA is a general purpose policy engine. It's not K8s specific.
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Create the OPA gatekeeper
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/opa/gatekeeper.yaml
+
+# Create an allow all template
+kubectl apply -f alwaysallow_template.yaml
+
+# Create an allow all policy
+kubectl apply -f all_pod_always_allow.yaml
+
+# Create a pod (ACCESS ALLOWED!)
+kubectl run pod --image=nginx
+
+# Change the error message (POD CANNOT BE CREATED!)
+kubectl apply -f all_pod_always_deny.yaml
+
+# View the constraints to see the violations
+kubectl describe K8sAlwaysAllow
+
+# Delete cluster
+kind delete cluster

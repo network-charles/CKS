@@ -1,0 +1,17 @@
+# Static analysis of user workloads
+## Conftest-OPA
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Use conftest for analysis
+Below is the file tree arrangement
+
+├── deployment.yaml
+└── policy
+    └── deployment.rego
+
+# Execute any of the commands below to test
+conftest test deployment.yaml # Install conftest to use this
+OR
+docker run --rm -v ./:/project openpolicyagent/conftest test deployment.yaml

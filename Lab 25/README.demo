@@ -1,0 +1,28 @@
+# Open Policy Agent (OPA)
+## Deny all policy
+
+OPA is a general purpose policy engine. It's not K8s specific.
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Create the OPA gatekeeper
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/opa/gatekeeper.yaml
+
+# Create a deny all template
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/opa/deny-all/alwaysdeny_template.yaml
+
+# Create a deny all policy
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/opa/deny-all/all_pod_always_deny.yaml
+
+# Create a pod (ACCESS DENIED!)
+kubectl run pod --image=nginx
+
+# Change the error message (POD CANNOT BE CREATED!)
+kubectl apply -f all_pod_always_deny.yaml
+
+# View the constraints to see the violations
+kubectl describe K8sAlwaysDeny
+
+# Delete cluster
+kind delete cluster

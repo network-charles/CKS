@@ -1,0 +1,26 @@
+# Whitelist some registries using OPA
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Create the OPA gatekeeper
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/opa/gatekeeper.yaml
+
+# Grab template and constraint-policy
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/opa/k8strustedimages_template.yaml
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/opa/all_pod_must_have_trusted_images.yaml
+
+# Apply them
+kubectl apply -f k8strustedimages_template.yaml
+kubectl apply -f all_pod_must_have_trusted_images.yaml
+kubectl get constrainttemplate
+kubectl describe k8strustedimages
+
+# Create an nginx pod (not trusted image!)
+kubectl run pod --image=nginx
+
+# Specify the allowed registry and create the pod again
+kubectl run pod --image=docker.io/nginx
+
+# Delete cluster
+kind delete cluster

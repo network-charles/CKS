@@ -1,0 +1,27 @@
+# Secure and hardening images
+
+There are several ways to achieve this:
+1. Use specific package versions
+2. Don't run as root
+3. Make filesystem read only
+4. Remove shell access
+
+# Use specific package versions
+docker build -f Dockerfile2_package_versions -t app .
+docker run app
+docker images
+
+# Don't run as root 
+docker build -f Dockerfile3_no_root -t app .
+docker run app
+docker images
+
+# Make filesystem read only
+docker build -f Dockerfile4_read_only_fs -t app .
+docker run app
+docker images
+
+# Remove shell access
+docker build -f Dockerfile5_no_shell_access -t app .
+docker run app
+docker images

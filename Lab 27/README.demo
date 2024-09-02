@@ -1,0 +1,19 @@
+# Image footprint and multi stage builds
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Build and run docker image and view the size
+docker build -t app .
+docker run app
+docker images
+
+The file size is approximately 667MB
+
+# Reduce the file size using a multi-stage build
+docker build -f Dockerfile1_multi_stage -t app .
+docker run app
+docker images
+
+# Delete cluster
+kind delete cluster

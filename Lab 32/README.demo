@@ -1,0 +1,28 @@
+# Use image digest and list all image registries in the cluster 
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# List all images
+kubectl get pod -A -o yaml | grep -i image:
+
+# Verify the image digest of the API server
+kubectl describe pod -n kube-system kube-apiserver-kind-control-plane | grep -i image
+
+Image:         registry.k8s.io/kube-apiserver:v1.31.0
+Image ID:      docker.io/library/import-2024-08-13@sha256:eb4760466bf0dea0ed0a6557780dfdfb8a26bfe22302a9c023c1a45fc315ee03
+
+# Edit the API server manifest to use the image digest ID as its image name
+docker exec -it kind-control-plane bash
+apt update && apt install vim -y
+cd /etc/kubernetes/manifests/
+vi kube-apiserver.yaml 
+
+Replace <image-name>:<tag> with <image-name>@<digest>
+
+kubeimage/kube-apiserver-amd64@sha256:0152542e7f4b30498f92ae06ec3248c54d5aa12639ddf2891bf78730e982c32c
+
+# Delete cluster
+kind delete cluster
+
+For more see, https://cloud.google.com/kubernetes-engine/docs/concepts/about-container-images

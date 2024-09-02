@@ -1,0 +1,6 @@
+# Static analysis of user workloads
+## Kubesec
+
+# Use kubesec for analysis
+kubectl run pod --image=nginx --dry-run=client -o yaml > pod.yaml
+docker run -i kubesec/kubesec:v2 scan /dev/stdin < pod.yaml
