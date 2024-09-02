@@ -1,0 +1,9 @@
+# Image policy webhook
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+
+
+# Delete cluster
+kind delete cluster
