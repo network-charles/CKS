@@ -3,7 +3,59 @@
 # Create clusters
 kind create cluster --config cluster.yaml
 
+# Edit the API server manifest and specify additional admission plugin (ImagePolicyWebhook)
+docker exec -it kind-control-plane bash
+apt update && apt install vim -y
+cd /etc/kubernetes/manifests/
+vi kube-apiserver.yaml 
+- --enable-admission-plugins=NodeRestriction,ImagePolicyWebhook
 
+# Verify logs to see why its failing (couldn't init admission plugin \"ImagePolicyWebhook\)
+cd /var/log/pods/kube-system_kube-apiserver-kind-control-plane_xxx/
+tail -f kube-apiserver/4.log
+
+# Add the plugin directory
+cd /etc/kubernetes/
+mkdir admission
+cd admission
+apt install wget
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/ImagePolicyWebhook/admission_config.yaml
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/ImagePolicyWebhook/apiserver-client-cert.pem
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/ImagePolicyWebhook/apiserver-client-key.pem
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/ImagePolicyWebhook/external-cert.pem
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/ImagePolicyWebhook/external-key.pem
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/ImagePolicyWebhook/kubeconf
+
+# Edit the API server manifest and specify the admission control argument
+docker exec -it kind-control-plane bash
+cd /etc/kubernetes/manifests/
+vi kube-apiserver.yaml 
+- --admission-control-config-file=/etc/kubernetes/admission/admission_config.yaml
+
+# Add the volume mount
+- mountPath: /etc/kubernetes/admission
+  name: admission
+  readOnly: true
+
+# Add the volume path
+- hostPath:
+    path: /etc/kubernetes/admission
+    type: DirectoryOrCreate
+  name: admission
+
+# View API server pod (Admission controller hides the pod via viewing using kubectl)
+kubectl get pod -A
+
+# Create a pod (Fails)
+kubectl run pod --image=nginx
+
+# Change the admission manifest to allow
+docker exec -it kind-control-plane bash
+vi /etc/kubernetes/admission/admission_config.yaml 
+defaultAllow: true
+
+# Create a pod (Successful)
+kubectl run pod --image=nginx
 
 # Delete cluster
 kind delete cluster
