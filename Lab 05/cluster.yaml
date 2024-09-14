@@ -3,10 +3,10 @@ apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
   extraPortMappings:
-  - containerPort: 80 # The k8s service port
-    hostPort: 80  # The host port you want to expose the k8s service from
-    protocol: TCP
-  - containerPort: 443 # The k8s service port
-    hostPort: 443  # The host port you want to expose the k8s service from
+  - containerPort: 30080 # The k8s service port
+    hostPort: 30080 # The host port you want to expose the k8s service
+    protocol: tcp
+  - containerPort: 30443
+    hostPort: 30443
     protocol: TCP
 - role: worker
