@@ -1,15 +1,18 @@
 # Secure ingress
 
-# Create cluster 
+# Create cluster
 kind create cluster --config cluster.yaml
 
 # Install nginx controller
-kubectl apply -f 
-https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/nginx-ingress-controller.yaml
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/nginx-ingress-controller.yaml
 
 # Add a path to service 1 and 2
-kubectl apply -f 
-https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/secure-ingress-step1.yaml
+sleep 45
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/secure-ingress-step1.yaml
+
+# Modify the ingress service node ports
+kubectl patch svc ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op":"replace","path":"/spec/ports/0/nodePort","value":30080}]'
+kubectl patch svc ingress-nginx-controller -n ingress-nginx --type='json' -p='[{"op":"replace","path":"/spec/ports/1/nodePort","value":30443}]'
 
 # Create 2 pods and expose them
 kubectl run pod1 --image=nginx
@@ -17,17 +20,29 @@ kubectl run pod2 --image=nginx
 kubectl expose pod pod1 --port 80 --name service1
 kubectl expose pod pod2 --port 80 --name service2
 
-# Access services 1 and 2 (http)
-curl public_ip:nodeport_http/service1
-curl public_ip:nodeport_http/service2
+##############################################
+# Expose cloud9 security group to the internet
+##############################################
 
-# Create TLS with a self signed SSL certificate
-kubectl apply -f 
-https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/secure-ingress-step2.yaml
+# View EC2 public IP
+curl checkip.amazonaws.com
+
+# Access services 1 and 2 (http)
+curl localhost:30080/service1
+curl localhost:30080/service2
+OR
+curl public_ip:30080/service1
+curl public_ip:30080/service2
+
+# Create TLS with a self-signed SSL certificate
+kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/secure-ingress/secure-ingress-step2.yaml
 
 # Access services 1 and 2 (https)
-curl public_ip:nodeport_https/service1 -k
-curl public_ip:nodeport_https/service2 -k
+curl localhost:30443/service1
+curl localhost:30443/service2
+OR
+curl public_ip:30443/service1 -k
+curl public_ip:30443/service2 -k
 
 # Delete cluster
 kind delete cluster
