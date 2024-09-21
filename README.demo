@@ -1,0 +1,127 @@
+# Lab 01
+Certificates 
+
+# Lab 02
+Containers isolation
+
+# Lab 03
+Network policies
+
+# Lab 04
+K8s Dashboard
+
+# Lab 05
+Secure ingress
+
+# Lab 06
+Node metadata protection
+
+# Lab 07
+CIS Benchmark
+1.1.1 Ensure that the API server pod specification file permissions are set to 644 or more restrictive (Automated)
+
+# Lab 08
+CIS Benchmark
+1.1.12 Ensure that the etcd data directory ownership is set to etcd:etcd (Automated)
+
+# Lab 09
+Server Binaries
+
+# Lab 10
+API-Server Binaries
+
+# Lab 11
+Role binding
+
+# Lab 12
+ClusterRole binding
+
+# Lab 13
+Create a certificate+key and authenticate as a user "jane"
+
+# Lab 14
+Service accounts (used to communicate with the API-Server)
+
+# Lab 15
+Restrict anonymous access to the API server
+
+# Lab 16
+Disable insecure port to the API server
+
+# Lab 17
+Perform API Requests using the CA, CRT, and KEY
+
+# Lab 18
+Make the Kubernetes API reachable from the outside
+
+# Lab 19
+Verify that node restriction works by using worker nodes kubelet kubeconfig to set labels
+
+# Lab 20
+Secrets accessible via container runtime and etcd
+
+# Lab 21
+Container sandbox - Gvisor
+# Lab 22
+Security context for pod and container
+Change the user and group a container process is running in
+
+# Lab 23
+Security context for pod and container
+Privileged containers
+
+# Lab 24
+Mutual TLS
+Lets create a side-car proxy container with NET_ADMIN capability
+
+# Lab 25
+Open Policy Agent (OPA)
+Deny all policy
+
+# Lab 26
+Open Policy Agent (OPA)
+Allow all policy
+
+# Lab 27
+Image footprint and multi stage builds
+
+# Lab 28
+Secure and hardening images
+
+# Lab 29
+Static analysis of user workloads
+Kubesec
+
+# Lab 30
+Static analysis of user workloads
+Conftest-OPA
+
+# Lab 31
+Scan images for known vulnerabilities
+
+# Lab 32
+Use image digest and list all image registries in the cluster 
+
+# Lab 33
+Whitelist some registries using OPA
+
+# Lab 34
+Image policy webhook
+
+# Lab 35
+Syscall and process behavioral analytics at host & container level
+
+# Lab 36
+Falco for syscall and process behavioral analytics at host & container level
+
+# Lab 37
+Immutability of containers at runtime
+
+# Lab 38
+Immutability of containers at runtime
+
+# Lab 39
+Set up and configure audit logs
+
+# Lab 40
+Kernel hardening - Seccomp
