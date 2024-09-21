@@ -1,0 +1,28 @@
+# Investigate linux users
+
+# Create cluster
+kind create cluster --config cluster.yaml
+
+# exec into worker node
+docker exec -it kind-worker bash
+
+# see current user
+whoami
+
+# create a new user test and set the password
+adduser test
+
+# view all users
+cat /etc/passwd
+
+# login as user test
+su test
+
+# view processes for each user
+ps aux | grep bash
+
+# change password of the root user
+passwd root
+
+# Delete cluster
+kind delete cluster

@@ -1,0 +1,102 @@
+# AppArmor - Kubernetes (apparmor supported on docker container runtime)
+
+# Create infrastructure
+terraform init -backend-config=backend.conf
+terraform apply -auto-approve
+
+# Access the EKS cluster CLI
+aws eks update-kubeconfig --name eks
+
+# Confirm that Nodes are Up
+kubectl get nodes
+
+# Running the AppArmor Profile Loader
+kubectl apply -f configmap.yaml
+kubectl apply -f daemonset.yaml
+
+# Apply a pod that uses the appArmorProfile
+kubectl apply -f example-pod.yaml
+
+# Clean Up
+terraform destroy -auto-approve
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# Install apparmor utilites and rsyslog in the kind cluster nodes. Also mount the security file path
+docker exec -it kind-worker bash -c "apt update && apt install apparmor-utils -y && systemctl restart containerd && mount -t securityfs securityfs /sys/kernel/security" && apt-get update && apt-get install rsyslog -y && systemctl start rsyslog && systemctl enable rsyslog ; \
+docker exec -it kind-control-plane bash -c "apt update && apt install apparmor-utils -y && systemctl restart containerd && mount -t securityfs securityfs /sys/kernel/security" && apt-get update && apt-get install rsyslog -y && systemctl start rsyslog && systemctl enable rsyslog
+
+# create and enforce profile on every node
+docker cp ~/environment/CKS/Lab\ 41/profile-docker-nginx kind-worker:/etc/apparmor.d ; \
+docker exec kind-worker aa-enforce profile-docker-nginx
+docker cp ~/environment/CKS/Lab\ 41/profile-docker-nginx kind-control-plane:/etc/apparmor.d ; \
+docker exec kind-control-plane aa-enforce profile-docker-nginx 
+
+# create pod
+kubectl run secure --image=nginx -o yaml --dry-run=client > pod.yaml
+
+# apply apparmor profile to the container
+securityContext:
+    appArmorProfile:
+      type: Localhost
+      localhostProfile: docker-nginx
+
+# Add the above to {.spec}
+kubectl apply -f pod.yaml
+
+
+
+
+
+
+
+# verify the file is available
+ls /etc/apparmor.d
+
+# apply the profile
+cd /etc/apparmor.d
+aa-enforce profile-docker-nginx
+
+# verify the profile application
+aa-status | grep docker             # find docker-nginx
+
+# run an nginx docker image using the apparmor profile
+docker run -d --security-opt apparmor=docker-nginx nginx:alpine
+docker exec -it vibrant_wright sh
+
+# try to create a file in the root dir inside the container
+cd root
+touch hi.txt.           # permission denied due to this rule "deny /root/** wl," on the profile
+
+# use the docker-default profile to see it work
+docker run -d --security-opt apparmor=docker-default nginx:alpine
+docker exec -it crazy_babbage sh
+
+# try to create a file in the root dir inside the container
+cd root
+touch hi.txt         
+ls                  # it works
+
+# disable the apparmor docker-nginx profile
+cd /etc/apparmor.d
+aa-disable profile-docker-nginx    
+
+# verify the profile is removed
+aa-status | grep docker             # find docker-nginx
+
+# Delete cluster
+kind delete cluster

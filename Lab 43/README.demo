@@ -1,0 +1,26 @@
+# Seccomp
+Restricts executions of syscalls by processes
+
+# Create clusters
+kind create cluster --config cluster.yaml
+
+# verify that the file hae been mounted
+docker exec -it kind-worker ls /var/lib/kubelet/seccomp/
+
+# create pod
+kubectl run secure --image=nginx -o yaml --dry-run=client > pod.yaml
+
+# delete the "write" syscall on the profile json file at line 389
+"write",
+
+# apply seccomp profile to the container
+securityContext:
+    seccompProfile:
+      type: Localhost
+      localhostProfile: profile-docker-nginx.json
+
+# Add the above to {.spec}
+kubectl apply -f pod.yaml       # pod fails to create since nginx can't use the write syscall
+
+# Delete cluster
+kind delete cluster

@@ -1,0 +1,41 @@
+# AppArmor - nginx container that uses an AppArmor profile
+
+# enter as a root user
+sudo su
+
+# create a profile for docker nginx on the host
+cp profile-docker-nginx /etc/apparmor.d 
+
+# verify the file is available
+ls /etc/apparmor.d
+
+# apply the profile
+cd /etc/apparmor.d
+aa-enforce profile-docker-nginx
+
+# verify the profile application
+aa-status | grep docker             # find docker-nginx
+
+# run an nginx docker image using the apparmor profile
+docker run -d --security-opt apparmor=docker-nginx nginx:alpine
+docker exec -it vibrant_wright sh
+
+# try to create a file in the root dir inside the container
+cd root
+touch hi.txt.           # permission denied due to this rule "deny /root/** wl," on the profile
+
+# use the docker-default profile to see it work
+docker run -d --security-opt apparmor=docker-default nginx:alpine
+docker exec -it crazy_babbage sh
+
+# try to create a file in the root dir inside the container
+cd root
+touch hi.txt         
+ls                  # it works
+
+# disable the apparmor docker-nginx profile
+cd /etc/apparmor.d
+aa-disable profile-docker-nginx    
+
+# verify the profile is removed
+aa-status | grep docker             # find docker-nginx

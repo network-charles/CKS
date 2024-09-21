@@ -124,4 +124,25 @@ Immutability of containers at runtime
 Set up and configure audit logs
 
 # Lab 40
-Kernel hardening - Seccomp
+AppArmor - disable curl on worker node
+
+# Lab 41
+AppArmor - nginx container that uses an AppArmor profile
+
+# Lab 42
+AppArmor - Kubernetes (apparmor supported on docker container runtime)
+
+# Lab 43
+Seccomp
+
+# Lab 44
+Disable or stop service using systemctl - snapd
+
+# Lab 45
+Install and investigate services
+
+# Lab 46
+Find and disable the application listening on port 21
+
+# Lab 47
+Investigate linux users

@@ -1,12 +1,26 @@
-# Kernel hardening - Seccomp
+# AppArmor - disable curl on worker node
 
 # Create clusters
 kind create cluster --config cluster.yaml
 
+# View apparmor status
+sudo aa-status
 
+# Install apparmor utilites and rsyslog in the kind cluster nodes
+docker exec -it kind-worker bash -c "apt update && apt install apparmor-utils -y && systemctl restart containerd && mount -t securityfs securityfs /sys/kernel/security" && apt-get update && apt-get install rsyslog -y && systemctl start rsyslog && systemctl enable rsyslog ; \
+docker exec -it kind-control-plane bash -c "apt update && apt install apparmor-utils -y && systemctl restart containerd && mount -t securityfs securityfs /sys/kernel/security" && apt-get update && apt-get install rsyslog -y && systemctl start rsyslog && systemctl enable rsyslog
 
+# exec into the worker nodes
+docker exec -it kind-worker bash
 
+# create a profile for curl
+curl killer.sh -v           # it works initially
+aa-genprof curl             # type F to finish the creation
+aa-status | grep -i curl && cat /etc/apparmor.d/usr.bin.curl 
+curl killer.sh -v           # it fails
 
+# update apparmor profile according to the logs
+aa-disable curl
 
 # Delete cluster
 kind delete cluster

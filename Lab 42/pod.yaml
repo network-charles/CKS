@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: secure
+  name: secure
+spec:
+  containers:
+  - image: nginx
+    name: secure
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  securityContext:
+    appArmorProfile:
+      type: Localhost
+      localhostProfile: docker-default
+status: {}

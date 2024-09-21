@@ -1,0 +1,17 @@
+# Disable or stop service using systemctl - snapd
+
+# check status
+systemctl status snapd
+systemctl list-units | grep snapd
+
+# stop service
+sudo systemctl stop snapd
+
+# start service
+sudo systemctl start snapd
+
+# disable service
+sudo systemctl disable snapd
+
+# enable service
+sudo systemctl enable snapd

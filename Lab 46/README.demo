@@ -1,0 +1,28 @@
+# Find and disable the application listening on port 21
+
+# Create cluster
+kind create cluster --config cluster.yaml
+
+# exec into worker node
+docker exec -it kind-worker bash
+
+# install vsftpd and samba services
+apt update
+apt install vsftpd -y
+
+# view status of the services
+systemctl status vsftpd
+systemctl start vsftpd
+
+# view port the services are running at
+apt install net-tools
+netstat -plnt | grep 21
+
+# stop the service
+systemctl stop vsftpd
+
+# verify that the port is no longer open
+netstat -plnt | grep 21
+
+# Delete cluster
+kind delete cluster

@@ -1,0 +1,24 @@
+# Install and investigate services
+
+# Create cluster
+kind create cluster --config cluster.yaml
+
+# exec into worker node
+docker exec -it kind-worker bash
+
+# install vsftpd and samba services
+apt update
+apt install vsftpd samba -y
+
+# view status of the services
+systemctl status vsftpd
+systemctl status smbd
+systemctl start smbd
+systemctl start vsftpd
+
+# view port the services are running at
+apt install net-tools
+netstat -plnt
+
+# Delete cluster
+kind delete cluster

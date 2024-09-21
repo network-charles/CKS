@@ -1,0 +1,16 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 30950 # The k8s service port
+    hostPort: 30950 # The host port you want to expose the k8s service
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  extraMounts:
+  - hostPath: "./profile-docker-nginx.json"
+    containerPath: "/var/lib/kubelet/seccomp/profile-docker-nginx.json"
+- role: worker
+  extraMounts:
+  - hostPath: "./profile-docker-nginx.json"
+    containerPath: "/var/lib/kubelet/seccomp/profile-docker-nginx.json"
